@@ -127,7 +127,7 @@ initLoginDispatch = function(lop, container.id=lop$container.id, app=getApp()) {
   session = app$session
 
   # Very important: make session specific copy of lop
-  lop = as.environment(as.list(lop))
+  lop = as.environment(as.list(lop, all.names=TRUE))
   set.lop(lop)
 
   lop$container.id = container.id
