@@ -75,8 +75,8 @@ lop.login.btn.click = function(app=getApp(),lop,formValues,ns=lop$ns,...) {
   }
 }
 
-lop.default.failed.login = function(app=getApp(),lop=get.lop(),msg,ns=lop$ns,...) {
-  show.html.warning(ns(login$alert),msg)
+lop.default.failed.login = function(app=getApp(),lop=get.lop(),msg="Log-in failed.",ns=lop$ns,...) {
+  show.html.warning(ns("loginAlert"),msg)
   cat("\nlog-in failed: ",msg)
 }
 

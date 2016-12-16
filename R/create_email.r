@@ -66,7 +66,18 @@ create.email.user.click = function(lop, ns=lop$ns, passwd.len=6,formValues,...) 
   subject = res$subject; body = res$body; msg = res$msg
 
   mail = c(list(subject=subject,body=body,to=email), lop$smtp)
-  do.call(mailR::send.mail, mail)
+  if (!isTRUE(try(require(mailR)))) {
+    show.html.message("Error mailR package is not installed! Cannot send email for sign-up.")
+    return()
+  }
+  res = try(do.call(mailR::send.mail, mail))
+  if (is(res,"try-error")) {
+    show.html.message("An error occured while trying to send the sign-up email.")
+    return()
+  }
+
+
+    do.call(mailR::send.mail, mail)
 
   show.html.message(ns("lopCreateInfo"),msg)
 }

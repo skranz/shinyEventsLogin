@@ -7,7 +7,11 @@ examples.loginPart = function() {
 
   login.fun = function(app=getApp(),userid,lop=get.lop(),...) {
     cat("Successfully logged in as ", userid)
-    setUI("mainUI", success.ui)
+    setUI("mainUI", wellPanel(actionButton("successBtn", "Success... log in again")))
+    buttonHandler("successBtn", function(app,...) {
+      show.html.message(lop$ns("loginAlert"),"")
+      setUI("mainUI",lop$login.ui.fun())
+    })
   }
 
   check.email.fun = function(email="",...) {
@@ -16,7 +20,7 @@ examples.loginPart = function() {
                 email=="sebkranz@gmail.com")) {
       return(list(ok=FALSE, msg="Please only send to your own email adresses!"))
     }
-  list(ok=TRUE,msg="")
+    list(ok=TRUE,msg="")
   }
 
   sender.file = "sender.txt"
@@ -26,17 +30,6 @@ examples.loginPart = function() {
   lop = loginModule(db.arg = db.arg, login.fun=login.fun, check.email.fun=check.email.fun,app.url="http://127.0.0.1:4915", app.title="Ulm-WiWi Seminarvergabe",container.id = "mainUI", init.userid = "", init.password = ""
   )
 
-  set.lop(lop)
-  lop.connect.db(lop=lop)
-
-
-  success.ui = wellPanel(
-    actionButton("successBtn", "Success... log in again")
-  )
-  buttonHandler("successBtn", function(app,...) {
-    show.html.message(lop$login$alert,"")
-    setUI("mainUI",lop$login$ui)
-  })
 
   appInitHandler(function(session,...) {
     initLoginDispatch(lop)
@@ -45,13 +38,12 @@ examples.loginPart = function() {
   ui = fluidPage(uiOutput("mainUI"))
   app$lop = lop
   restore.point.options(display.restore.point = TRUE)
-
   runEventsApp(app,ui = ui, launch.browser=rstudio::viewer)
 
 }
 
 loginModule = function(id="loginModule",container.id = NULL,db.arg=lop.db.arg(),conn=NULL,login.fun=NULL, signup.fun = default.signup.fun, reset.fun = default.reset.fun, check.email.fun=NULL, email.text.fun = default.email.text.fun, app.url = NULL, app.title=id, init.userid="", init.password="", email.domain=NULL, smtp=NULL, set.need.authentication = TRUE, send.password=FALSE, login.link = FALSE, app=getApp(),
-lang="en",login.title=NULL,help.text=NULL,
+lang="en",login.title=NULL,help.text=NULL, connect.db=TRUE, load.smtp=FALSE,
   login.failed.fun = lop.default.failed.login,
   login.ui.fun = login.default.ui,
   create.email.ui.fun = lop.default.create.email.user.ui,
@@ -115,6 +107,16 @@ lang="en",login.title=NULL,help.text=NULL,
   }
 
   lop = as.environment(lop)
+  if (connect.db) {
+    lop.connect.db(lop=lop)
+    if (load.smtp){
+      if (is.null(smtp)) lop$smtp = lop.get.smtp(lop=lop)
+    }
+
+  }
+
+
+
   lop
 }
 
@@ -123,8 +125,12 @@ lang="en",login.title=NULL,help.text=NULL,
 initLoginDispatch = function(lop, container.id=lop$container.id, app=getApp()) {
   restore.point("initLoginDispatch")
   session = app$session
-  lop$container.id = container.id
 
+  # Very important: make session specific copy of lop
+  lop = as.environment(as.list(lop))
+  set.lop(lop)
+
+  lop$container.id = container.id
   lop.login.handlers(lop=lop)
   observe(priority = -100,x = {
     query <- parseQueryString(session$clientData$url_search)
