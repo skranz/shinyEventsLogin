@@ -9,7 +9,7 @@ lop.default.reset.email.user.ui = function(lop,ns=lop$ns, ...) {
   widgets = list(
     HTML("<h3>Reset password for user account</h3>"),
     flexTextInput(ns("lopCreateEmail"), "Email", value = ""),
-    actionButton(ns("lopCreateBtn"), "Send email to confirm account reset.","data-form-selector"=sel),
+    actionButton(ns("lopResetEmailBtnBtn"), "Send email to confirm account reset.","data-form-selector"=sel),
     actionButton(ns("lopCancelBtn"), "Cancel"),
     uiOutput(ns("lopCreateInfo"))
   )
@@ -39,12 +39,13 @@ lop.default.create.email.user.ui = function(lop,ns=lop$ns, ...) {
 
 
 lop.create.email.handlers = function(lop, ns=lop$ns,...) {
-  buttonHandler(ns("lopCreateBtn"),create.email.user.click, lop=lop,no.authentication.required = TRUE)
+  buttonHandler(ns("lopCreateBtn"),create.email.user.click, lop=lop,no.authentication.required = TRUE, mode="create_user")
+  buttonHandler(ns("lopResetEmailBtn"),create.email.user.click, lop=lop,no.authentication.required = TRUE, mode="reset_password")
   buttonHandler(ns("lopCancelBtn"),cancel.create.email.user.click, lop=lop,no.authentication.required = TRUE)
 
 }
 
-create.email.user.click = function(lop, ns=lop$ns, passwd.len=6,formValues,...) {
+create.email.user.click = function(lop, ns=lop$ns, passwd.len=6,formValues,mode="create_user",...) {
   user = email = formValues[[ns("lopCreateEmail")]]
   restore.point("create.email.user.click")
 
@@ -61,7 +62,7 @@ create.email.user.click = function(lop, ns=lop$ns, passwd.len=6,formValues,...) 
     }
   }
 
-  link = lop.create.link(userid=user,link_type="confirm",lop=lop)
+  link = lop.create.link(userid=user,link_type=mode,lop=lop)
   res = lop$email.text.fun(lop,email,link)
   subject = res$subject; body = res$body; msg = res$msg
 

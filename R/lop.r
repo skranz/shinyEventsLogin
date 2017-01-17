@@ -7,10 +7,9 @@ examples.loginPart = function() {
 
   login.fun = function(app=getApp(),userid,lop=get.lop(),...) {
     cat("Successfully logged in as ", userid)
-    setUI("mainUI", wellPanel(actionButton("successBtn", "Success... log in again")))
+    setUI("mainUI", wellPanel(actionButton("successBtn", paste0("Success... ", userid, " log in again"))))
     buttonHandler("successBtn", function(app,...) {
-      show.html.message(lop$ns("loginAlert"),"")
-      setUI("mainUI",lop$login.ui.fun())
+      initLoginDispatch(lop=get.lop())
     })
   }
 
@@ -27,7 +26,7 @@ examples.loginPart = function() {
   db.arg = list(dbname="testdb",drv=SQLite())
   #lop.create.db(db.arg,overwrite = TRUE)
 
-  lop = loginModule(db.arg = db.arg, login.fun=login.fun, check.email.fun=check.email.fun,app.url="http://127.0.0.1:4915", app.title="Ulm-WiWi Seminarvergabe",container.id = "mainUI", init.userid = "", init.password = ""
+  lop = loginModule(db.arg = db.arg, login.fun=login.fun, check.email.fun=check.email.fun,app.url="http://127.0.0.1:4915", app.title="Ulm-WiWi Seminarvergabe",container.id = "mainUI", init.userid = "", init.password = "", need.password = TRUE, need.userid=TRUE, fixed.password="Omkoo", use.signup=TRUE
   )
 
 
@@ -42,13 +41,22 @@ examples.loginPart = function() {
 
 }
 
-loginModule = function(id="loginModule",container.id = NULL,db.arg=lop.db.arg(),conn=NULL,login.fun=NULL, signup.fun = default.signup.fun, reset.fun = default.reset.fun, check.email.fun=NULL, email.text.fun = default.email.text.fun, app.url = NULL, app.title=id, init.userid="", init.password="", email.domain=NULL, smtp=NULL, set.need.authentication = TRUE, send.password=FALSE, login.link = FALSE, app=getApp(),
+loginModule = function(id="loginModule",container.id = NULL,db.arg=lop.db.arg(),conn=NULL,login.fun=NULL, signup.fun = default.signup.fun, reset.fun = default.reset.fun, check.email.fun=NULL, email.text.fun = default.email.text.fun, app.url = NULL, app.title=id, init.userid="", init.password="", email.domain=NULL, smtp=NULL, set.need.authentication = TRUE, login.link = FALSE, app=getApp(),
 lang="en",login.title=NULL,help.text=NULL, connect.db=TRUE, load.smtp=FALSE,
   login.failed.fun = lop.default.failed.login,
   login.ui.fun = login.default.ui,
   create.email.ui.fun = lop.default.create.email.user.ui,
   reset.email.ui.fun = lop.default.reset.email.user.ui,
   create.passwd.ui.fun = lop.default.create.passwd.ui,
+
+  userid.equals.email=TRUE,
+  need.password=TRUE,
+  need.userid=TRUE,
+  userid.or.email=TRUE,
+  fixed.password=NULL,
+  validate.userid.fun = default.validate.userid.fun,
+  use.signup = need.userid & need.password,
+
   ...
 )
 {
@@ -87,7 +95,6 @@ lang="en",login.title=NULL,help.text=NULL, connect.db=TRUE, load.smtp=FALSE,
     init.password = init.password,
     smtp = smtp,
     login.link = login.link,
-    send.password = send.password,
 
     lang = lang,
     login.title=login.title,
@@ -98,8 +105,21 @@ lang="en",login.title=NULL,help.text=NULL, connect.db=TRUE, load.smtp=FALSE,
     login.ui.fun = login.ui.fun,
     create.email.ui.fun = create.email.ui.fun,
     reset.email.ui.fun = reset.email.ui.fun,
-    create.passwd.ui.fun = create.passwd.ui.fun
+    create.passwd.ui.fun = create.passwd.ui.fun,
+
+    userid.equals.email=userid.equals.email,
+    need.password=need.password,
+    need.userid=need.userid,
+    userid.or.email=userid.or.email,
+    fixed.password=fixed.password,
+    use.fixed.password = !is.null(fixed.password) & need.password,
+    validate.userid.fun = validate.userid.fun,
+    use.signup = use.signup
   )
+  if (need.password & !need.userid & lop$use.fixed.password) {
+    stop("If need.userid==FALSE and need.password==TRUE, you must provide a fixed.password to loginModule.")
+  }
+
   if (!is.null(lop$sender.file)) {
     sender.txt = readLines(lop$sender.file)
     txt = poor.decrypt(sender.txt)

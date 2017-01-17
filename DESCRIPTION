@@ -9,4 +9,4 @@ Description: A simple login framework for shinyEvents apps (probably not very se
 License: GPL >= 2.0
 LazyData: TRUE
 Depends: openssl, shiny, shinyEvents, shinyBS, yaml, RSQLite
-Imports: pool,mailR
+Imports: pool
