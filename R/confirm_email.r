@@ -91,6 +91,10 @@ parse.created.userid = function(lop, ns=lop$ns, app=getApp()) {
   restore.point("parse.created.userid")
 
   userid = getInputValue(ns("createUserid"))
+  if (isTRUE(lop$only.lowercase)) {
+    userid = tolower(userid)
+  }
+
 
   valid = lop$validate.userid.fun(userid)
   if (!valid$ok) return(valid)

@@ -67,6 +67,11 @@ lop.reset.btn.click = function(app=getApp(),lop,...) {
 
 lop.login.btn.click = function(app=getApp(),lop,formValues,ns=lop$ns,...) {
   userid = formValues[[ns("loginUser")]]
+  if (isTRUE(lop$only.lowercase)) {
+    userid = tolower(userid)
+  }
+
+
   password = formValues[[ns("loginPassword")]]
 
   cat("userid = ", userid, " password = ", password)

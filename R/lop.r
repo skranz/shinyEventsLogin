@@ -57,6 +57,8 @@ lang="en",login.title=NULL,help.text=NULL, connect.db=TRUE, load.smtp=FALSE,
   validate.userid.fun = default.validate.userid.fun,
   use.signup = need.userid & need.password,
 
+  only.lowercase=TRUE,
+
   ...
 )
 {
@@ -114,7 +116,9 @@ lang="en",login.title=NULL,help.text=NULL, connect.db=TRUE, load.smtp=FALSE,
     fixed.password=fixed.password,
     use.fixed.password = !is.null(fixed.password) & need.password,
     validate.userid.fun = validate.userid.fun,
-    use.signup = use.signup
+    use.signup = use.signup,
+
+    only.lowercase = only.lowercase
   )
   if (need.password & !need.userid & lop$use.fixed.password) {
     stop("If need.userid==FALSE and need.password==TRUE, you must provide a fixed.password to loginModule.")
@@ -154,7 +158,7 @@ initLoginDispatch = function(lop, container.id=lop$container.id, app=getApp()) {
   lop.login.handlers(lop=lop)
   observe(priority = -100,x = {
     query <- parseQueryString(session$clientData$url_search)
-    restore.point("appInitHandler")
+    restore.point("loginDispatchObserver")
     if ("confirm" %in% names(query)) {
       show.confirm.email(lop=lop, linkid=query$confirm)
     } else {

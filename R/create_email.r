@@ -47,6 +47,11 @@ lop.create.email.handlers = function(lop, ns=lop$ns,...) {
 
 create.email.user.click = function(lop, ns=lop$ns, passwd.len=6,formValues,mode="create_user",...) {
   user = email = formValues[[ns("lopCreateEmail")]]
+  if (isTRUE(lop$only.lowercase)) {
+    user = tolower(user)
+    email = tolower(email)
+  }
+
   restore.point("create.email.user.click")
 
   if (is.null(lop$smtp)) {
