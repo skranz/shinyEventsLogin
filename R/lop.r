@@ -42,7 +42,7 @@ examples.loginPart = function() {
 }
 
 loginModule = function(id="loginModule",container.id = NULL,db.arg=lop.db.arg(),conn=NULL,login.fun=NULL, signup.fun = default.signup.fun, reset.fun = default.reset.fun, check.email.fun=NULL, email.text.fun = default.email.text.fun, app.url = NULL, app.title=id, init.userid="", init.password="", email.domain=NULL, smtp=NULL, set.need.authentication = TRUE, login.link = FALSE, app=getApp(),
-lang="en",login.title=NULL,help.text=NULL, connect.db=TRUE, load.smtp=FALSE,
+lang="en",login.title=NULL,help.text=NULL, connect.db=use.signup, load.smtp=FALSE,
   login.failed.fun = lop.default.failed.login,
   login.ui.fun = login.default.ui,
   create.email.ui.fun = lop.default.create.email.user.ui,
