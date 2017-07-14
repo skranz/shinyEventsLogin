@@ -3,7 +3,10 @@ show.login.ui = function(lop,...) {
 
   # login directly
   if (!lop$need.userid & !lop$need.password) {
-    lop$login.fun(userid=lop$init.userid, password=lop$init.password, lop=lop,...)
+    init.userid = lop$init.userid
+    if (is.function(init.userid)) init.userid = init.userid()
+
+    lop$login.fun(userid=init.userid, password=lop$init.password, lop=lop,...)
     return()
   }
 
@@ -14,6 +17,8 @@ show.login.ui = function(lop,...) {
 login.default.ui = function(lop=NULL,ns=lop$ns, init.userid=lop$init.userid, init.password=lop$init.password, title.html = lop$login.title,help.text=lop$login.help,lang = lop$lang,...) {
   restore.point("login.default.ui")
   sel = ids2sel(c(ns("loginUser"),ns("loginPassword")))
+
+  if (is.function(init.userid)) init.userid = init.userid()
 
   if (identical(lang,"de")) {
     widgets = list(
