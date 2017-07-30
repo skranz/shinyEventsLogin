@@ -58,6 +58,9 @@ lang="en",login.title=NULL,help.text=NULL, connect.db=use.signup, load.smtp=FALS
   use.signup = need.userid & need.password,
 
   only.lowercase=TRUE,
+  login.by.query.key = c("no","allow","require")[1],
+  token.dir = NULL,
+  fixed.query.key = NULL,
 
   ...
 )
@@ -118,7 +121,10 @@ lang="en",login.title=NULL,help.text=NULL, connect.db=use.signup, load.smtp=FALS
     validate.userid.fun = validate.userid.fun,
     use.signup = use.signup,
 
-    only.lowercase = only.lowercase
+    only.lowercase = only.lowercase,
+    login.by.query.key = login.by.query.key,
+    token.dir = token.dir,
+    fixed.query.key = fixed.query.key
   )
   if (need.password & !need.userid & lop$use.fixed.password) {
     stop("If need.userid==FALSE and need.password==TRUE, you must provide a fixed.password to loginModule.")
@@ -159,6 +165,26 @@ initLoginDispatch = function(lop, container.id=lop$container.id, app=getApp()) {
   observe(priority = -100,x = {
     query <- parseQueryString(session$clientData$url_search)
     restore.point("loginDispatchObserver")
+    if (lop$login.by.query.key == "allow" | lop$login.by.query.key == "require") {
+      res = login.by.query.key(lop,query = query)
+      # successful login via url key
+
+      if (res$ok) {
+        restore.point("sfhfbhbf")
+        app$is.authenticated = TRUE
+        if (is.null(lop$login.fun)) {
+          stop("No login.fun defined.")
+        }
+
+        do.call(lop$login.fun, c(res$tok,list(lop=lop)))
+        return(invisible())
+      } else if (lop$login.by.query.key == "require") {
+        app$is.authenticated = FALSE
+        lop$login.failed.fun(msg=res$msg, lop=lop)
+        return(invisible())
+      }
+    }
+
     if ("confirm" %in% names(query)) {
       show.confirm.email(lop=lop, linkid=query$confirm)
     } else {

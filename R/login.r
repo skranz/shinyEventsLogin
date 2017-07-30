@@ -93,6 +93,11 @@ lop.login.btn.click = function(app=getApp(),lop,formValues,ns=lop$ns,...) {
 }
 
 lop.default.failed.login = function(app=getApp(),lop=get.lop(),msg="Log-in failed.",ns=lop$ns,...) {
+  if (lop$login.by.query.key=="require") {
+    cat("\nlog-in failed: ",msg)
+    setUI(lop$container.id, HTML(colored.html(msg)))
+    return()
+  }
   show.html.warning(ns("loginAlert"),msg)
   cat("\nlog-in failed: ",msg)
 }

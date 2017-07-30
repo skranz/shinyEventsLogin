@@ -1,3 +1,7 @@
+colored.html = function(txt, color="#cc0000") {
+  if (is.null(color)) return(txt)
+  paste0("<font color='",color,"'>",txt,"</font>")
+}
 
 fill.defaults = function(li, def.li) {
   restore.point("fill.defaults")
