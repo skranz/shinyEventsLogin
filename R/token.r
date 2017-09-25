@@ -11,7 +11,7 @@
 examples.token.login = function() {
   token.dir = "D:/libraries/shinyEventsLogin/tokens"
   tok = list(userid="test", validUntil = as.integer(Sys.time())+60*60)
-  key =write.login.token(tok, token.dir, key="testkey")
+  key = write.login.token(tok, token.dir, key="testkey")
   query = c(list(key=key),tok)
   check.login.token(token.dir, query)
 
@@ -58,6 +58,7 @@ login.by.query.key = function(lop, query) {
 }
 
 check.login.token = function(token.dir, query) {
+  restore.point("check.login.token")
   key = query[["key"]]
   if (is.null(key)) return(list(ok=FALSE, msg="No key provided in the url."))
 
@@ -86,13 +87,44 @@ check.login.token = function(token.dir, query) {
 
 }
 
-write.login.token = function(tok, token.dir, key = make.login.token.key(tok=tok)) {
+write.login.token = function(tok, token.dir, key = make.login.token.key(tok=tok),code=NULL) {
   json = toJSON(tok)
   writeLines(json, file.path(token.dir, key))
   key
 }
 
-make.login.token.key = function(tok=NULL, userid=tok[["userid"]], validUntil=tok[["validUntil"]], nchar=120) {
+#' Create a typical login token
+#'
+#' You can also manually create a token
+#' It must be a list that has at least the element key
+#' Generally, you will also specify a userid
+#' If the token is valid for a limited time, you should
+#' at a validUntil (a datetime stored as integer) value
+#'
+#' You can add a code to add an extra field besides key that
+#' will be stored inside the file. The key will be part
+#' of a tokens file name, the code will only be stored inside the
+#' token file.
+#' Hence using a code in addition to the allows longer codes in
+#' the URL without running in restrictions of file name length
+make.login.token = function(userid=NULL, key=NULL, code=NULL, validUntil=NULL, validMinutes=NULL, nchar.key = 120, make.key=is.null(key)) {
+  restore.point("make.login.token")
+
+  tok = list(userid=userid,key=key)
+  if (!is.null(validMinutes)) {
+    validUntil = as.integer(Sys.time()) + as.integer(validMinutes)*60L
+  }
+  if (!is.null(code)) tok$code = code
+  if (!is.null(validUntil))
+    tok$validUntil = as.integer(validUntil)
+  if (make.key)
+    tok$key = make.login.token.key(tok=tok, nchar=nchar.key)
+  tok
+}
+
+make.login.token.key = function(tok=NULL, userid=tok[["userid"]], validUntil=tok[["validUntil"]], key=tok$key, nchar=120) {
+  if (!is.null(key))
+    return(key)
   key = random.string(1,nchar)
   if (is.null(userid)) {
     userhash=""
@@ -104,6 +136,15 @@ make.login.token.key = function(tok=NULL, userid=tok[["userid"]], validUntil=tok
   }
   key = paste0(validUntil,"_",key,"_",userhash)
   key
+}
+
+token.login.url = function(base.url,tok=NULL,key=tok$key, code=tok$code) {
+  if (is.null(code)) {
+    url = paste0(base.url,"?key=",key)
+  } else {
+    url = paste0(base.url,"?code=",key,"&key=",key)
+  }
+  url
 }
 
 random.string = function(n=1,nchar=14) {

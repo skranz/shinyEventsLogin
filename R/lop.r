@@ -56,16 +56,17 @@ lang="en",login.title=NULL,help.text=NULL, connect.db=use.signup, load.smtp=FALS
   fixed.password=NULL,
   validate.userid.fun = default.validate.userid.fun,
   use.signup = need.userid & need.password,
-
   only.lowercase=TRUE,
   login.by.query.key = c("no","allow","require")[1],
   token.dir = NULL,
   fixed.query.key = NULL,
-
+  login.by.cookie = login.by.query.key,
+  set.successful.query.key.as.cookie = FALSE,
+  cookie.name = "shinyEventsLoginCookie",
   ...
 )
 {
-  restore.point("loginPart")
+  restore.point("loginModule")
 
   if (is.null(container.id))
 
@@ -124,7 +125,10 @@ lang="en",login.title=NULL,help.text=NULL, connect.db=use.signup, load.smtp=FALS
     only.lowercase = only.lowercase,
     login.by.query.key = login.by.query.key,
     token.dir = token.dir,
-    fixed.query.key = fixed.query.key
+    fixed.query.key = fixed.query.key,
+    login.by.cookie = login.by.cookie,
+    set.successful.query.key.as.cookie = set.successful.query.key.as.cookie,
+    cookie.name = cookie.name
   )
   if (need.password & !need.userid & lop$use.fixed.password) {
     stop("If need.userid==FALSE and need.password==TRUE, you must provide a fixed.password to loginModule.")
@@ -147,6 +151,29 @@ lang="en",login.title=NULL,help.text=NULL, connect.db=use.signup, load.smtp=FALS
 
 
 
+  # We add the corresponding flags and handlers
+  # to deal with authentification by cookie and token
+  app$..cookies.were.loaded = FALSE
+  if (lop$login.by.cookie != "no") {
+    restore.point("init.login.by.cookie")
+    eventId = "loginCookieLoad"
+    addEventsAppExtraTags(cookiesHeader(onload.cookies = lop$cookie.name, eventId=eventId))
+    loadPageCookiesHandler(eventId=eventId, function(cookies,nonce,..., app=getApp(),session=getAppSession(app)) {
+      restore.point("loadLoginCookieHandler")
+
+      app$..cookies.were.loaded = TRUE
+      cookie = cookies[[lop$cookie.name]]
+      if (!is.null(cookie)) {
+        app$..loginCookieReactive = reactiveValues(cookie=c(cookie, list(has.cookie = TRUE, nonce=nonce)))
+      } else {
+        app$..loginCookieReactive = reactiveValues(cookie=list(has.cookie = FALSE, nonce=nonce))
+      }
+
+    })
+  }
+
+
+
   lop
 }
 
@@ -163,10 +190,43 @@ initLoginDispatch = function(lop, container.id=lop$container.id, app=getApp()) {
   lop$container.id = container.id
   lop.login.handlers(lop=lop)
   observe(priority = -100,x = {
+
     query <- parseQueryString(session$clientData$url_search)
     restore.point("loginDispatchObserver")
-    if (lop$login.by.query.key == "allow" | lop$login.by.query.key == "require") {
-      res = login.by.query.key(lop,query = query)
+
+    # If there is no query key and we allow cookies
+    # but cookies are not yet loaded
+    # wait for a small while
+    if ((is.null(query[["key"]]) | lop$login.by.query.key == "no") & lop$login.by.cookie != "no" & app$..cookies.were.loaded == FALSE) {
+      cat("\nWait until cookies are loaded.")
+      shiny::invalidateLater(100)
+      return()
+    }
+
+    # Don't authenticate again if authenticated
+    # this is relevant since the observer
+    # may be called once with the query string
+    # and then once again when cookies are
+    # loaded
+    if (isTRUE(app$is.authenticated)) return()
+
+    cookie = app$..loginCookieReactive$cookie
+
+
+    restore.point("loginDispatchObserver")
+
+    if (lop$login.by.query.key == "allow" | lop$login.by.query.key == "require" | lop$login.by.cookie == "require" | (!is.null(cookie) & lop$login.by.cookie != "no")) {
+      query.or.cookie = query
+      use.query = TRUE
+      # take information from cookie
+      # if there is no query$key
+      # or we are not allowed to use a cookie
+      if (lop$login.by.cookie != "no" & !is.null(cookie) & (is.null(query[["key"]]) | lop$login.by.query.key == "no")) {
+        use.query = FALSE
+        query.or.cookie = cookie
+      }
+
+      res = login.by.query.key(lop,query = query.or.cookie)
       # successful login via url key
 
       if (res$ok) {
@@ -176,9 +236,17 @@ initLoginDispatch = function(lop, container.id=lop$container.id, app=getApp()) {
           stop("No login.fun defined.")
         }
 
-        do.call(lop$login.fun, c(res$tok,list(lop=lop)))
+        # set query as cookie
+        # the cookie can be relevant if another
+        # app from the same server is opened
+        if (use.query & isTRUE(lop$set.successful.query.key.as.cookie)) {
+          cat("\nset cookie key = ", query$key)
+          setCookie(lop$cookie.name, list(key=query$key, code=query$code))
+        }
+
+        do.call(lop$login.fun, c(res$tok,list(lop=lop, tok=res$tok)))
         return(invisible())
-      } else if (lop$login.by.query.key == "require") {
+      } else if (lop$login.by.query.key == "require" | lop$login.by.cookie=="require") {
         app$is.authenticated = FALSE
         lop$login.failed.fun(msg=res$msg, lop=lop)
         return(invisible())
