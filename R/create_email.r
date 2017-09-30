@@ -86,7 +86,7 @@ create.email.user.click = function(lop, ns=lop$ns, passwd.len=6,formValues,mode=
     mail = c(list(subject=subject,body=body,to=email), lop$smtp)
     res = try(do.call(mailR::send.mail, mail))
   } else {
-    res = try(sendmailR::sendmail(from=lop$smtp$from, to=email, subject=subject, msg=body,control=list(smtpServer=lop$smtp$host.name)))
+    res = try(sendmailR::sendmail(from=lop$smtp$from, to=email, subject=subject, msg=body,control=list(smtpServer=lop$smtp$smtp$host.name)))
   }
 
   if (is(res,"try-error")) {
