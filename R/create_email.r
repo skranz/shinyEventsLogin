@@ -86,7 +86,9 @@ create.email.user.click = function(lop, ns=lop$ns, passwd.len=6,formValues,mode=
     mail = c(list(subject=subject,body=body,to=email), lop$smtp)
     res = try(do.call(mailR::send.mail, mail))
   } else {
-    res = try(sendmailR::sendmail(from=lop$smtp$from, to=email, subject=subject, msg=body,control=list(smtpServer=lop$smtp$smtp$host.name)))
+    # In sendmail, we need to separate lines in body
+    # a \n character yields an error.
+    res = try(sendmailR::sendmail(from=lop$smtp$from, to=email, subject=subject, msg=sep.lines(body),control=list(smtpServer=lop$smtp$smtp$host.name)))
   }
 
   if (is(res,"try-error")) {
@@ -125,8 +127,8 @@ lop.create.link = function(userid,link_type="confirm", lop=get.lop(), valid_secs
 default.email.text.fun = function(lop, email,link,...) {
   subject = paste0("Confirm user account for ", lop$app.title)
 
-  body = paste0("
-Hi,
+  body = paste0(
+"Hi,
 
 you get this email, because you want to sign-up on ",lop$app.title," with this email adress. To confirm your user account and to choose a password, please follow the link below:\n\n ", link$url,
 "\n\nIf you have not registred on ",lop$app.title,", someone else unsuccessfully tried to sign up with your email address. Then please ignore this email."
