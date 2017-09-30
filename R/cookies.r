@@ -10,7 +10,7 @@ cookies.login.example = function() {
   )
 
 
-  lop = loginModule(login.by.query.key = "require", fixed.query.key = "abcd",init.userid = "guest",login.by.cookie = "allow", container.id="mainUI", set.successful.query.key.as.cookie = TRUE,
+  lop = loginModule(login.by.query.key = "require", fixed.query.key = "abcd",init.userid = "guest",login.by.cookie = "allow", container.id="mainUI", set.successful.query.key.as.cookie = TRUE, allowed.userids = "guest2",
     login.fun = function(...) {
       setUI("mainUI",p(paste0("Successful login.", sample.int(1000,1))))
     },

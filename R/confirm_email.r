@@ -99,12 +99,18 @@ parse.created.userid = function(lop, ns=lop$ns, app=getApp()) {
   valid = lop$validate.userid.fun(userid)
   if (!valid$ok) return(valid)
 
+  if (!is.null(lop$allowed.userids)) {
+    if (!isTRUE(userid %in% lop$allowed.userids)) {
+      return(list(ok=FALSE, msg=paste0("The user ",userid," has no access to this application.")))
+    }
+  }
+
   user = dbGetRow(lop$conn, "users",nlist(userid))
 
   if (NROW(user)>0) {
-    return(ok=FALSE, msg=paste0("A user with username ",userid," already exists."))
+    return(list(ok=FALSE, msg=paste0("A user with username ",userid," already exists.")))
   }
-  return(ok=TRUE, msg="",userid=userid)
+  return(list(ok=TRUE, msg="",userid=userid))
 }
 
 accept.passwd.click = function(lop,ns=lop$ns, app=getApp(),...) {
@@ -121,6 +127,13 @@ accept.passwd.click = function(lop,ns=lop$ns, app=getApp(),...) {
     lop$userid = res$userid
   }
 
+  if (!is.null(lop$allowed.userids)) {
+    if (!isTRUE(lop$userid %in% lop$allowed.userids)) {
+      return(list(ok=FALSE, msg=paste0("The user ",lop$userid," has no access to this application.")))
+    }
+  }
+
+
   #cat("\n\npaswwd: ", lop$passwd)
   salt = make.salt()
   res = make.password.hash(password = lop$passwd, salt=salt)
@@ -130,7 +143,7 @@ accept.passwd.click = function(lop,ns=lop$ns, app=getApp(),...) {
   # Remove link
   dbDelete(lop$conn,"loginlinks", list(linkid=lop$linkid))
 
-  lop$login.fun(userid=user$userid, lop=lop)
+  lop$login.fun(userid=user$userid, lop=lop, login.mode="manual")
 }
 
 

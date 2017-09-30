@@ -53,8 +53,16 @@ login.by.query.key = function(lop, query) {
     return(list(ok=FALSE, msg = "Error: The app specifies login via url key but does neither provide a key nor a token directory."))
   }
 
-  return(check.login.token(token.dir,query))
+  res = check.login.token(token.dir,query)
 
+  # Check if userid is allowed
+  if (res$ok & !is.null(lop$allowed.userids)) {
+    if (!isTRUE(res$tok$userid %in% lop$allowed.userids)) {
+      return(list(ok=FALSE, msg = "Your URL query / cookie refers to a user that has no access to this application."))
+    }
+  }
+
+  return(res)
 }
 
 check.login.token = function(token.dir, query) {
@@ -122,7 +130,28 @@ make.login.token = function(userid=NULL, key=NULL, code=NULL, validUntil=NULL, v
   tok
 }
 
-make.login.token.key = function(tok=NULL, userid=tok[["userid"]], validUntil=tok[["validUntil"]], key=tok$key, nchar=120) {
+# Remove expired login tokens assuming
+# The key follows the canonical namining konvention
+remove.expired.login.tokens = function(token.dir) {
+  restore.point("remove.expired.login.tokens")
+  if (is.null(token.dir)) return()
+
+  files = list.files(token.dir)
+  files = files[substring(files,1,3)=="_vu"]
+
+  time = str.left.of(files,"_", not.found=rep(NA, length(files)))
+  files = files[!is.na(time)]
+  time = time[!is.na(time)]
+  time = as.integer(substring(time,3))
+
+  expired = time < as.integer(Sys.time())
+  files = files[expired]
+
+  try(file.remove(file.path(token.dir, files)))
+
+}
+
+make.login.token.key = function(tok=NULL, userid=tok[["userid"]], validUntil=tok[["validUntil"]], key=tok$key, nchar=60) {
   if (!is.null(key))
     return(key)
   key = random.string(1,nchar)
@@ -133,8 +162,10 @@ make.login.token.key = function(tok=NULL, userid=tok[["userid"]], validUntil=tok
   }
   if (is.null(validUntil)) {
     validUntil = ""
+  } else {
+    validUntil = paste0("vu",validUntil)
   }
-  key = paste0(validUntil,"_",key,"_",userhash)
+  key = paste0("_",validUntil,"_",key,"_",userhash)
   key
 }
 
@@ -152,4 +183,14 @@ random.string = function(n=1,nchar=14) {
   if (n == 1) return(paste0(chars, collapse=""))
   mat = as.data.frame(matrix(chars, n, nchar))
   do.call(paste0,mat)
+}
+
+# Set a browser cookie that allows automatic
+# login based on the provided login token
+# Can be useful if one app (like TeacherHub)
+# where the user has logged in
+# starts another app (like presenterApp) for
+# which we automatically want to log in
+set.login.token.cookie = function(tok, cookieId="shinyEventsLoginCookie") {
+  setCookie(cookieId, list(key=tok$key, code=tok$code))
 }

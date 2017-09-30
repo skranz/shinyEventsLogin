@@ -6,7 +6,7 @@ show.login.ui = function(lop,...) {
     init.userid = lop$init.userid
     if (is.function(init.userid)) init.userid = init.userid()
 
-    lop$login.fun(userid=init.userid, password=lop$init.password, lop=lop,...)
+    lop$login.fun(userid=init.userid, password=lop$init.password, lop=lop, login.mode="direct",...)
     return()
   }
 
@@ -85,7 +85,7 @@ lop.login.btn.click = function(app=getApp(),lop,formValues,ns=lop$ns,...) {
   restore.point("lop.login.btn.click")
   if (res$ok==TRUE) {
     app$is.authenticated = TRUE
-    lop$login.fun(userid=userid, password=password, lop=lop,...)
+    lop$login.fun(userid=userid, password=password, lop=lop,login.mode="manual",...)
   } else {
     app$is.authenticated = FALSE
     lop$login.failed.fun(userid=userid, password=password, msg=res$msg, lop=lop,...)
@@ -105,6 +105,14 @@ lop.default.failed.login = function(app=getApp(),lop=get.lop(),msg="Log-in faile
 lop.check.login = function(userid, password, lop=get.lop()) {
   restore.point("lop.check.login")
 
+  # only a fixed list of users is allowed to login
+  if (!is.null(lop$allowed.userids)) {
+    if (!isTRUE(userid %in% lop$allowed.userids)) {
+      return(list(ok=FALSE, msg=paste0("The user ",userid," has no access to this application.")))
+    }
+  }
+
+
   # login via a fixed password
   if (lop$use.fixed.password) {
     if (!identical(password, lop$fixed.password)) {
@@ -112,6 +120,8 @@ lop.check.login = function(userid, password, lop=get.lop()) {
     }
     return(list(ok=TRUE,msg=""))
   }
+
+
 
   # just pick a username without any password
   if (!lop$use.signup) {

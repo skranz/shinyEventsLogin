@@ -26,7 +26,7 @@ examples.loginPart = function() {
   db.arg = list(dbname="testdb",drv=SQLite())
   #lop.create.db(db.arg,overwrite = TRUE)
 
-  lop = loginModule(db.arg = db.arg, login.fun=login.fun, check.email.fun=check.email.fun,app.url="http://127.0.0.1:4915", app.title="Ulm-WiWi Seminarvergabe",container.id = "mainUI", init.userid = "", init.password = "", need.password = TRUE, need.userid=TRUE, fixed.password="Omkoo", use.signup=TRUE
+  lop = loginModule(db.arg = db.arg, login.fun=login.fun, check.email.fun=check.email.fun,app.url="http://127.0.0.1:4915", app.title="Ulm-WiWi Seminarvergabe",container.id = "mainUI", init.userid = "", init.password = "", need.password = TRUE, need.userid=TRUE, fixed.password="test", use.signup=TRUE, allowed.userids="test"
   )
 
 
@@ -41,8 +41,8 @@ examples.loginPart = function() {
 
 }
 
-loginModule = function(id="loginModule",container.id = NULL,db.arg=lop.db.arg(),conn=NULL,login.fun=NULL, signup.fun = default.signup.fun, reset.fun = default.reset.fun, check.email.fun=NULL, email.text.fun = default.email.text.fun, app.url = NULL, app.title=id, init.userid="", init.password="", email.domain=NULL, smtp=NULL, set.need.authentication = TRUE, login.link = FALSE, app=getApp(),
-lang="en",login.title=NULL,help.text=NULL, connect.db=use.signup, load.smtp=FALSE,
+loginModule = function(id="loginModule",container.id = NULL,db.arg=lop.db.arg(dbname = dbname), dbname=NULL,  conn=NULL,login.fun=NULL, signup.fun = default.signup.fun, reset.fun = default.reset.fun, check.email.fun=NULL, email.text.fun = default.email.text.fun, app.url = NULL, app.title=id, init.userid="", init.password="", email.domain=NULL, smtp=NULL, set.need.authentication = TRUE, login.link = FALSE, app=getApp(),
+lang="en",login.title=NULL,help.text=NULL, connect.db=use.signup & !is.null(db.arg$dbname), load.smtp=FALSE,
   login.failed.fun = lop.default.failed.login,
   login.ui.fun = login.default.ui,
   create.email.ui.fun = lop.default.create.email.user.ui,
@@ -63,6 +63,7 @@ lang="en",login.title=NULL,help.text=NULL, connect.db=use.signup, load.smtp=FALS
   login.by.cookie = login.by.query.key,
   set.successful.query.key.as.cookie = FALSE,
   cookie.name = "shinyEventsLoginCookie",
+  allowed.userids = NULL,
   ...
 )
 {
@@ -128,7 +129,9 @@ lang="en",login.title=NULL,help.text=NULL, connect.db=use.signup, load.smtp=FALS
     fixed.query.key = fixed.query.key,
     login.by.cookie = login.by.cookie,
     set.successful.query.key.as.cookie = set.successful.query.key.as.cookie,
-    cookie.name = cookie.name
+    cookie.name = cookie.name,
+
+    allowed.userids = allowed.userids
   )
   if (need.password & !need.userid & lop$use.fixed.password) {
     stop("If need.userid==FALSE and need.password==TRUE, you must provide a fixed.password to loginModule.")
@@ -146,7 +149,6 @@ lang="en",login.title=NULL,help.text=NULL, connect.db=use.signup, load.smtp=FALS
     if (load.smtp){
       if (is.null(smtp)) lop$smtp = lop.get.smtp(lop=lop)
     }
-
   }
 
 
@@ -188,20 +190,17 @@ initLoginDispatch = function(lop, container.id=lop$container.id, app=getApp()) {
   set.lop(lop)
 
   lop$container.id = container.id
-  lop.login.handlers(lop=lop)
+
+  # If we don't have a container.id
+  # we don't show login inputs
+  # but only use automatic inputs
+  if (!is.null(container.id))
+    lop.login.handlers(lop=lop)
+
   observe(priority = -100,x = {
 
     query <- parseQueryString(session$clientData$url_search)
     restore.point("loginDispatchObserver")
-
-    # If there is no query key and we allow cookies
-    # but cookies are not yet loaded
-    # wait for a small while
-    if ((is.null(query[["key"]]) | lop$login.by.query.key == "no") & lop$login.by.cookie != "no" & app$..cookies.were.loaded == FALSE) {
-      cat("\nWait until cookies are loaded.")
-      shiny::invalidateLater(100)
-      return()
-    }
 
     # Don't authenticate again if authenticated
     # this is relevant since the observer
@@ -209,6 +208,17 @@ initLoginDispatch = function(lop, container.id=lop$container.id, app=getApp()) {
     # and then once again when cookies are
     # loaded
     if (isTRUE(app$is.authenticated)) return()
+
+
+    # If there is no query key and we allow cookies
+    # but cookies are not yet loaded
+    # wait for a small while
+    if ((is.null(query[["key"]]) | lop$login.by.query.key == "no") & lop$login.by.cookie != "no" & app$..cookies.were.loaded == FALSE) {
+      cat("\nWait until cookies are loaded...")
+      shiny::invalidateLater(100)
+      return()
+    }
+
 
     cookie = app$..loginCookieReactive$cookie
 
@@ -227,10 +237,11 @@ initLoginDispatch = function(lop, container.id=lop$container.id, app=getApp()) {
       }
 
       res = login.by.query.key(lop,query = query.or.cookie)
-      # successful login via url key
 
+      # successful login via url key
       if (res$ok) {
-        restore.point("sfhfbhbf")
+        restore.point("successfull.authenticated")
+        cat("\nsuccessfully authenticated by", ifelse(use.query," query key.","cookie."))
         app$is.authenticated = TRUE
         if (is.null(lop$login.fun)) {
           stop("No login.fun defined.")
@@ -244,10 +255,12 @@ initLoginDispatch = function(lop, container.id=lop$container.id, app=getApp()) {
           setCookie(lop$cookie.name, list(key=query$key, code=query$code))
         }
 
-        do.call(lop$login.fun, c(res$tok,list(lop=lop, tok=res$tok)))
+        do.call(lop$login.fun, c(res$tok,list(lop=lop, tok=res$tok, login.mode=ifelse(use.query,"query","cookie") )))
         return(invisible())
       } else if (lop$login.by.query.key == "require" | lop$login.by.cookie=="require") {
         app$is.authenticated = FALSE
+        cat("\nAuthentification failed: ", res$msg)
+
         lop$login.failed.fun(msg=res$msg, lop=lop)
         return(invisible())
       }
@@ -269,7 +282,7 @@ set.lop = function(lop,app=getApp(), field="..lop.LOGIN") {
   app[[field]] = lop
 }
 
-lop.db.arg = function(dbname="testdb",drv=SQLite(),...) {
+lop.db.arg = function(dbname=NULL,drv=SQLite(),...) {
   args = list(...)
   fill.defaults(args, nlist(dbname,drv))
 }
