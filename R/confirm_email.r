@@ -58,8 +58,18 @@ show.confirm.email = function(lop,linkid, app=getApp(),...) {
   } else {
     app$is.authenticated = TRUE
     link = as.list(link[1,,drop=FALSE])
+
+    if (!is.null(lop$allowed.userids)) {
+      if (!isTRUE(link$userid %in% lop$allowed.userids)) {
+        setUI(lop$container.id, HTML("The user in the confirmation code has no access to this application."))
+        return()
+      }
+    }
+
     lop$link_type = link$link_type
     lop$userid = link$userid
+
+
     lop$email = link$userid
     lop$linkid = link$linkid
 

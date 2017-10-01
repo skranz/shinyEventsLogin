@@ -67,6 +67,14 @@ create.email.user.click = function(lop, ns=lop$ns, passwd.len=6,formValues,mode=
     }
   }
 
+  if (!is.null(lop$allowed.userids)) {
+    if (!isTRUE(email %in% lop$allowed.userids)) {
+      show.html.warning(ns("lopCreateInfo"),"The user with that email adress has no access to this application.")
+      return(NULL)
+    }
+  }
+
+
   link = lop.create.link(userid=user,link_type=mode,lop=lop)
   res = lop$email.text.fun(lop,email,link)
   subject = res$subject; body = res$body; msg = res$msg
