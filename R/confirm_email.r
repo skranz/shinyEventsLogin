@@ -63,7 +63,7 @@ show.confirm.email = function(lop,linkid, app=getApp(),...) {
     lop$email = link$userid
     lop$linkid = link$linkid
 
-    lop$create.userid = !(lop$userid.equals.emails | lop$link_type == "reset_password")
+    lop$create.userid = !(lop$userid.equals.email | lop$link_type == "reset_password")
 
     # If user exists and userid can be different to email, load existing userid
     if (!lop$userid.equals.email & !lop$create.userid) {
