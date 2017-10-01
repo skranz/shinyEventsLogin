@@ -9,7 +9,7 @@ lop.default.reset.email.user.ui = function(lop,ns=lop$ns, ...) {
   widgets = list(
     HTML("<h3>Reset password for user account</h3>"),
     flexTextInput(ns("lopCreateEmail"), "Email", value = ""),
-    actionButton(ns("lopResetEmailBtnBtn"), "Send email to confirm account reset.","data-form-selector"=sel),
+    actionButton(ns("lopResetEmailBtn"), "Send email to confirm account reset.","data-form-selector"=sel),
     actionButton(ns("lopCancelBtn"), "Cancel"),
     uiOutput(ns("lopCreateInfo"))
   )
