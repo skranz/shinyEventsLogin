@@ -98,3 +98,7 @@ setCookie = function(id, values) {
   callJS("Cookies.set", id,values);
 }
 
+removeCookie = function(id) {
+  callJS("Cookies.remove", id);
+}
+
