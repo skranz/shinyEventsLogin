@@ -191,6 +191,6 @@ random.string = function(n=1,nchar=14) {
 # where the user has logged in
 # starts another app (like presenterApp) for
 # which we automatically want to log in
-set.login.token.cookie = function(tok, cookieId="shinyEventsLoginCookie") {
-  setCookie(cookieId, list(key=tok$key, code=tok$code))
+set.login.token.cookie = function(tok, cookieId="shinyEventsLoginCookie", expires=NULL) {
+  setCookie(cookieId, list(key=tok$key, code=tok$code), expires=expires)
 }

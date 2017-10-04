@@ -93,9 +93,25 @@ $(document).on("shiny:sessioninitialized", function(event) {
   )
 }
 
-setCookie = function(id, values) {
+#' Set a javascript cookie on the client computer
+#' @param id the name of the cookie
+#' @param values a named list of values, will be transformed to JSON
+#' @param expires if null the cookie is valid until the browser closes.
+#'        If not nullnumber of days until the cookie expires.
+#'        The cookie will then persistently stored, if client computer
+#'        allows
+#' @param opts a named list of additional options
+#'        as explained on https://github.com/js-cookie/js-cookie
+setCookie = function(id, values, expires=NULL, opts=list()) {
   restore.point("setCookie")
-  callJS("Cookies.set", id,values);
+  if (!is.null(expires))
+    opts$expires=expires
+
+  if (length(opts)==0) {
+    callJS("Cookies.set", id,values);
+  } else {
+    callJS("Cookies.set", id,values, opts);
+  }
 }
 
 removeCookie = function(id) {
