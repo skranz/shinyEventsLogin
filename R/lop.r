@@ -64,6 +64,8 @@ lang="en",login.title=NULL,help.text=NULL, connect.db=use.signup & !is.null(db.a
   set.successful.query.key.as.cookie = FALSE,
   cookie.name = "shinyEventsLoginCookie",
   allowed.userids = NULL,
+  store.all.cookies = TRUE,
+  load.cookies.handler =NULL,
   ...
 )
 {
@@ -130,6 +132,8 @@ lang="en",login.title=NULL,help.text=NULL, connect.db=use.signup & !is.null(db.a
     login.by.cookie = login.by.cookie,
     set.successful.query.key.as.cookie = set.successful.query.key.as.cookie,
     cookie.name = cookie.name,
+    store.all.cookies = store.all.cookies,
+    load.cookies.handler = load.cookies.handler,
 
     allowed.userids = allowed.userids
   )
@@ -159,18 +163,24 @@ lang="en",login.title=NULL,help.text=NULL, connect.db=use.signup & !is.null(db.a
   if (lop$login.by.cookie != "no") {
     restore.point("init.login.by.cookie")
     eventId = "loginCookieLoad"
-    addEventsAppExtraTags(cookiesHeader(onload.cookies = lop$cookie.name, eventId=eventId))
+
+    onload.cookies = if (!lop$store.all.cookies) lop$cookie.name
+
+    addEventsAppExtraTags(cookiesHeader(onload.cookies = onload.cookies, eventId=eventId))
     loadPageCookiesHandler(eventId=eventId, function(cookies,nonce,..., app=getApp(),session=getAppSession(app)) {
       restore.point("loadLoginCookieHandler")
 
       app$..cookies.were.loaded = TRUE
+      setLoadedCookies(cookies, app=app)
       cookie = cookies[[lop$cookie.name]]
       if (!is.null(cookie)) {
         app$..loginCookieReactive = reactiveValues(cookie=c(cookie, list(has.cookie = TRUE, nonce=nonce)))
       } else {
         app$..loginCookieReactive = reactiveValues(cookie=list(has.cookie = FALSE, nonce=nonce))
       }
-
+      if (!is.null(lop$load.cookies.handler)) {
+        lop$load.cookies.handler(cookies)
+      }
     })
   }
 

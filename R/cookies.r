@@ -74,6 +74,17 @@ loadPageCookiesHandler = function(fun, eventId="loadPageCookies",no.authenticati
   eventHandler(eventId=eventId,id=eventId, fun=fun,no.authentication.required = no.authentication.required)
 }
 
+areAppCookiesLoaded = function(app=getApp()) {
+  isTRUE(app$..cookies.were.loaded)
+}
+
+setLoadedCookies = function(cookies, app=getApp()) {
+  app$..loaded.cookies = cookies
+}
+getLoadedCookies = function(app=getApp()) {
+  app$..loaded.cookies
+}
+
 cookiesHeader = function(onload.cookies=NULL, eventId="loadPageCookies",...) {
   library(htmltools)
   src = c(file=system.file("www", package="shinyEventsLogin"))
@@ -84,8 +95,15 @@ $(document).on("shiny:sessioninitialized", function(event) {
   shinyEventsSendCookies("', eventId,'",[',paste0('"', onload.cookies,'"', collapse=","),']);
 });
   ')
-    js = singleton(tags$script(HTML(js)))
+  } else {
+    # load all cookies
+    js = paste0('
+$(document).on("shiny:sessioninitialized", function(event) {
+  shinyEventsSendCookies("', eventId,'");
+});')
   }
+  js = singleton(tags$script(HTML(js)))
+
   tagList(
     htmlDependency("js.cookie",version="2.1.4",src=src,script = "js.cookie.js"),
     htmlDependency("shiny.events.cookies",version="0.1",src=src,script = "shiny.events.cookies.js"),
