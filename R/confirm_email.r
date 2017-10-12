@@ -9,27 +9,50 @@ lop.default.create.passwd.ui = function(lop, ns=lop$ns, lang=lop$lang, ...) {
   userid = lop$userid
   email=userid
 
+  if (identical(lang,"de")) {
+    widgets = list(
+      h4(lop$app.title),
+      if (!lop$create.userid) {
+        HTML(paste0("<p>Erstelle Passwort für ",userid,"</p><br>"))
+      } else {
+        tagList(
+          HTML(paste0("<p>Erstelle Nutzername und Passwort für ",email,"</p><br>")),
+          textInput(ns("createUserid"),"Nutzername",value="")
+        )
+      },
+      uiOutput(ns("passwd.display")),
+      actionButton(ns("createPasswdBtn"), "Ziehe anderes Passwort"),
+      if (!lop$create.userid) {
+        actionButton(ns("acceptPasswdBtn"), "Akzeptiere Passwort und weiter")
+      } else {
+        actionButton(ns("acceptPasswdBtn"), "Akzeptieren und weiter")
+      },
+      actionButton(ns("cancelPasswdBtn"), "Abbruch und Link löschen"),
+      uiOutput(ns("createPasswdInfo"))
+    )
 
-  widgets = list(
-    h4(lop$app.title),
-    if (!lop$create.userid) {
-      HTML(paste0("<p>Create password for ",userid,"</p><br>"))
-    } else {
-      tagList(
-        HTML(paste0("<p>Create username and password for ",email,"</p><br>")),
-        textInput(ns("createUserid"),"Username",value="")
-      )
-    },
-    uiOutput(ns("passwd.display")),
-    actionButton(ns("createPasswdBtn"), "Redraw password"),
-    if (!lop$create.userid) {
-      actionButton(ns("acceptPasswdBtn"), "Accept password and login")
-    } else {
-      actionButton(ns("acceptPasswdBtn"), "Accept and login")
-    },
-    actionButton(ns("cancelPasswdBtn"), "Cancel and remove link"),
-    uiOutput(ns("createPasswdInfo"))
-  )
+  } else {
+    widgets = list(
+      h4(lop$app.title),
+      if (!lop$create.userid) {
+        HTML(paste0("<p>Create password for ",userid,"</p><br>"))
+      } else {
+        tagList(
+          HTML(paste0("<p>Create username and password for ",email,"</p><br>")),
+          textInput(ns("createUserid"),"Username",value="")
+        )
+      },
+      uiOutput(ns("passwd.display")),
+      actionButton(ns("createPasswdBtn"), "Redraw password"),
+      if (!lop$create.userid) {
+        actionButton(ns("acceptPasswdBtn"), "Accept password and login")
+      } else {
+        actionButton(ns("acceptPasswdBtn"), "Accept and login")
+      },
+      actionButton(ns("cancelPasswdBtn"), "Cancel and remove link"),
+      uiOutput(ns("createPasswdInfo"))
+    )
+  }
   ui = wellPanel(widgets)
   setUI(ns("passwd.display"),"")
   setUI(ns("createPasswdInfo"),"")

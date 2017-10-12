@@ -2,17 +2,29 @@ examples.make.user = function() {
   random.password(nchar=6)
 }
 
-lop.default.reset.email.user.ui = function(lop,ns=lop$ns, ...) {
+lop.default.reset.email.user.ui = function(lop,ns=lop$ns, lang=lop$lang, ...) {
   restore.point("lop.default.reset.email.user.ui")
   sel = ids2sel(ns("lopCreateEmail"))
 
-  widgets = list(
-    HTML("<h3>Reset password for user account</h3>"),
-    flexTextInput(ns("lopCreateEmail"), "Email", value = ""),
-    actionButton(ns("lopResetEmailBtn"), "Send email to confirm account reset.","data-form-selector"=sel),
-    actionButton(ns("lopCancelBtn"), "Cancel"),
-    uiOutput(ns("lopCreateInfo"))
-  )
+
+  if (identical(lang,"de")) {
+    widgets = list(
+      HTML("<h3>Ersetze Passwort für Nutzer</h3>"),
+      flexTextInput(ns("lopCreateEmail"), "Email", value = ""),
+      actionButton(ns("lopResetEmailBtn"), "Sende Email zur Bestätigung.","data-form-selector"=sel),
+      actionButton(ns("lopCancelBtn"), "Abbruch"),
+      uiOutput(ns("lopCreateInfo"))
+    )
+
+  } else {
+    widgets = list(
+      HTML("<h3>Reset password for user account</h3>"),
+      flexTextInput(ns("lopCreateEmail"), "Email", value = ""),
+      actionButton(ns("lopResetEmailBtn"), "Send email to confirm account reset.","data-form-selector"=sel),
+      actionButton(ns("lopCancelBtn"), "Cancel"),
+      uiOutput(ns("lopCreateInfo"))
+    )
+  }
   ui = wellPanel(widgets)
   setUI(ns("lopCreateInfo"),"")
 
@@ -20,17 +32,26 @@ lop.default.reset.email.user.ui = function(lop,ns=lop$ns, ...) {
 }
 
 
-lop.default.create.email.user.ui = function(lop,ns=lop$ns, ...) {
+lop.default.create.email.user.ui = function(lop,ns=lop$ns,lang=lop$lang, ...) {
   restore.point("lop.default.create.email.user.ui")
   sel = ids2sel(ns("lopCreateEmail"))
-
-  widgets = list(
-    HTML("<h3>Create new user account</h3>"),
-    flexTextInput(ns("lopCreateEmail"), "Email", value = ""),
-    actionButton(ns("lopCreateBtn"), "Send email to confirm account.","data-form-selector"=sel),
-    actionButton(ns("lopCancelBtn"), "Cancel"),
-    uiOutput(ns("lopCreateInfo"))
-  )
+  if (identical(lang,"de")) {
+    widgets = list(
+      HTML("<h3>Erstelle neues Nutzerkonto</h3>"),
+      flexTextInput(ns("lopCreateEmail"), "Email", value = ""),
+      actionButton(ns("lopCreateBtn"), "Sende Email zum Bestätigen.","data-form-selector"=sel),
+      actionButton(ns("lopCancelBtn"), "Abbruch"),
+      uiOutput(ns("lopCreateInfo"))
+    )
+  } else {
+    widgets = list(
+      HTML("<h3>Create new user account</h3>"),
+      flexTextInput(ns("lopCreateEmail"), "Email", value = ""),
+      actionButton(ns("lopCreateBtn"), "Send email to confirm account.","data-form-selector"=sel),
+      actionButton(ns("lopCancelBtn"), "Cancel"),
+      uiOutput(ns("lopCreateInfo"))
+    )
+  }
   ui = wellPanel(widgets)
   setUI(ns("lopCreateInfo"),"")
 
