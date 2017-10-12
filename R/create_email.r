@@ -39,7 +39,7 @@ lop.default.create.email.user.ui = function(lop,ns=lop$ns,lang=lop$lang, ...) {
     widgets = list(
       HTML("<h3>Erstelle neues Nutzerkonto</h3>"),
       flexTextInput(ns("lopCreateEmail"), "Email", value = ""),
-      actionButton(ns("lopCreateBtn"), "Sende Email zum Bestätigen.","data-form-selector"=sel),
+      actionButton(ns("lopCreateBtn"), "Sende Email zum Bestätigen","data-form-selector"=sel),
       actionButton(ns("lopCancelBtn"), "Abbruch"),
       uiOutput(ns("lopCreateInfo"))
     )
@@ -160,7 +160,7 @@ default.email.text.fun = function(lop, email,link,...) {
 "Hi,
 
 you get this email, because you want to sign-up on ",lop$app.title," with this email adress. To confirm your user account and to choose a password, please follow the link below:\n\n ", link$url,
-"\n\nIf you have not registred on ",lop$app.title,", someone else unsuccessfully tried to sign up with your email address. Then please ignore this email."
+"\n\nIf you have not registered on ",lop$app.title,", someone else unsuccessfully tried to sign up with your email address. You can ignore this email in this case."
   )
 
   msg = paste0("I have send a confirmation email to ", email," from ",lop$smtp$from,".<br>The email contains a link to generate a password and activate your account.")
