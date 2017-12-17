@@ -76,7 +76,7 @@ lop.get.users = function(conn) {
 lop.get.user = function(userid,conn=lop$conn, lop=get.lop()) {
   restore.point("lop.get.user")
 
-  dbGetRow(conn,table = "users",params = list(userid=userid))
+  dbGet(conn,table = "users",params = list(userid=userid),empty.as.null=TRUE)
 }
 
 examples.lop.insert.smtp = function() {

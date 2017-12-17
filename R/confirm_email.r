@@ -72,7 +72,7 @@ show.confirm.email = function(lop,linkid, app=getApp(),...) {
 
   #setUI(lop$container.id, lop$create.password.ui(lop=lop))
 
-  link = dbGetRow(conn = lop$conn,table = "loginlinks",params = list(linkid=linkid))
+  link = dbGet(lop$conn,table = "loginlinks",params = list(linkid=linkid), empty.as.null=TRUE)
   if (is.null(link)) {
     ui = list(
       HTML("<p> The confirmation code in the link is not valid </p>")
@@ -100,7 +100,7 @@ show.confirm.email = function(lop,linkid, app=getApp(),...) {
 
     # If user exists and userid can be different to email, load existing userid
     if (!lop$userid.equals.email & !lop$create.userid) {
-      db.user = dbGetRow(lop$conn, "users",list(email=lop$email))
+      db.user = dbGet(lop$conn, "users",list(email=lop$email),empty.as.null=TRUE)
       lop$userid = db.user$userid
     }
 
@@ -138,7 +138,7 @@ parse.created.userid = function(lop, ns=lop$ns, app=getApp()) {
     }
   }
 
-  user = dbGetRow(lop$conn, "users",nlist(userid))
+  user = dbGet(lop$conn, "users",nlist(userid), empty.as.null=TRUE)
 
   if (NROW(user)>0) {
     return(list(ok=FALSE, msg=paste0("A user with username ",userid," already exists.")))

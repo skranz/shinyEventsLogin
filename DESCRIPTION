@@ -8,4 +8,5 @@ Maintainer: Sebastian Kranz <sebastian.kranz@uni-ulm.de>
 Description: A simple login framework for shinyEvents apps (probably not very secure)
 License: GPL >= 2.0
 LazyData: TRUE
-Depends: openssl, shiny, shinyEvents, shinyBS, yaml, RSQLite, jsonlite, digest, stringtools
+Depends: openssl, shiny, shinyEvents, shinyBS, yaml,
+  RSQLite, jsonlite, digest, stringtools, dbmisc
