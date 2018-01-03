@@ -179,7 +179,7 @@ token.login.url = function(base.url,tok=NULL,key=tok$key, code=tok$code) {
 }
 
 random.string = function(n=1,nchar=14) {
-  chars = sample(c(letters,LETTERS,0:9),nchar*n, replace = TRUE)
+  chars = sample(c(letters,LETTERS),nchar*n, replace = TRUE)
   if (n == 1) return(paste0(chars, collapse=""))
   mat = as.data.frame(matrix(chars, n, nchar))
   do.call(paste0,mat)
