@@ -14,7 +14,7 @@ show.login.ui = function(lop,...) {
   show.html.message(lop$ns("loginAlert"),"")
 }
 
-login.default.ui = function(lop=NULL,ns=lop$ns, init.userid=lop$init.userid, init.password=lop$init.password, title.html = lop$login.title,help.text=lop$login.help,lang = lop$lang,...) {
+login.default.ui = function(lop=NULL,ns=lop$ns, init.userid=lop$init.userid, init.password=lop$init.password, title.html = lop$login.title,help.text= if(!is.null(lop[["login.help"]])) lop$login.help else lop$help.text ,lang = lop$lang,...) {
   restore.point("login.default.ui")
   sel = ids2sel(c(ns("loginUser"),ns("loginPassword")))
 

@@ -137,7 +137,7 @@ lang="en",login.title=NULL,help.text=NULL, connect.db=use.signup & !is.null(db.a
 
     allowed.userids = allowed.userids
   )
-  if (need.password & !need.userid & lop$use.fixed.password) {
+  if (need.password & !need.userid & !lop$use.fixed.password) {
     stop("If need.userid==FALSE and need.password==TRUE, you must provide a fixed.password to loginModule.")
   }
 

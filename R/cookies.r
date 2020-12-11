@@ -115,7 +115,7 @@ $(document).on("shiny:sessioninitialized", function(event) {
 #' @param id the name of the cookie
 #' @param values a named list of values, will be transformed to JSON
 #' @param expires if null the cookie is valid until the browser closes.
-#'        If not nullnumber of days until the cookie expires.
+#'        If not null number of days until the cookie expires.
 #'        The cookie will then persistently stored, if client computer
 #'        allows
 #' @param opts a named list of additional options
