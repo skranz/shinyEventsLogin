@@ -117,7 +117,8 @@ create.email.user.click = function(lop, ns=lop$ns, passwd.len=6,formValues,mode=
   } else {
     # In sendmail, we need to separate lines in body
     # a \n character yields an error.
-    res = try(sendmailR::sendmail(from=lop$smtp$from, to=email, subject=subject, msg=sep.lines(body),control=list(smtpServer=lop$smtp$smtp$host.name)))
+    #res = try(sendmailR::sendmail(from=lop$smtp$from, to=email, subject=subject, msg=sep.lines(body),control=list(smtpServer=lop$smtp$smtp$host.name)))
+    res = try(my_sendmail(from=lop$smtp$from, to=email, subject=subject, msg=sep.lines(body),control=list(smtpServer=lop$smtp$smtp$host.name)))
   }
 
   if (is(res,"try-error")) {
@@ -128,6 +129,19 @@ create.email.user.click = function(lop, ns=lop$ns, passwd.len=6,formValues,mode=
 
 
   show.html.message(ns("lopCreateInfo"),msg)
+}
+
+# sendmail requires email adresses of the form "<myemail@email.com>"
+repair_email_address = function(email) {
+  rows = !startsWith(trimws(email),"<")
+  email[rows] = paste0("<", trimws(email),">")
+  email
+}
+
+my_sendmail = function(from, to,...) {
+  from = repair_email_address(from)
+  to = repair_email_address(to)
+  sendmailR::sendmail(from, to, ...)
 }
 
 
