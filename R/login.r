@@ -79,7 +79,7 @@ lop.login.btn.click = function(app=getApp(),lop,formValues,ns=lop$ns,...) {
 
   password = formValues[[ns("loginPassword")]]
 
-  cat("userid = ", userid, " password = ", password)
+  #cat("userid = ", userid)
 
   res = lop.check.login(userid=userid,password = password, lop=lop)
   restore.point("lop.login.btn.click")
