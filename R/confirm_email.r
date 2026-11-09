@@ -104,9 +104,13 @@ show.confirm.email = function(lop,linkid, app=getApp(),...) {
       lop$userid = db.user$userid
     }
 
-    setUI(lop$container.id, lop$create.passwd.ui.fun(lop=lop))
+    # Build the UI eagerly: setUI evaluates its ui argument lazily inside
+    # renderUI, and create.passwd.ui.fun resets passwd.display. If evaluated
+    # lazily, that reset would run after the password is drawn and hide it.
+    ui = lop$create.passwd.ui.fun(lop=lop)
+    setUI(lop$container.id, ui)
+    # also draws the initial password
     lop.create.password.handlers(lop=lop)
-    generate.passwd.click(lop=lop)
   }
 
 }
